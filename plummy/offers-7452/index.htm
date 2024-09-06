@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr.active {
+            background-color: #d4edda; /* Green for active */
+        }
+        tr.off {
+            background-color: #f8d7da; /* Red for off */
+        }
+        .search-container {
+            margin-bottom: 20px;
+        }
+        .search-input {
+            padding: 10px;
+            width: calc(100% - 110px);
+            margin-right: 10px;
+        }
+        .search-button {
+            padding: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="search-container">
+        <input type="text" id="searchInput" class="search-input" placeholder="Search..." oninput="filterTable()">
+        <button class="search-button" onclick="searchLink()">Go</button>
+    </div>
+    <table id="productTable">
+        <thead>
+            <tr>
+                <th>Status</th>
+                <th>Product Name</th>
+                <th>Product ID</th>
+                <th>Store ID</th>
+                <th>Price (USD)</th>
+                <th>Payer Points</th>
+                <th>Description</th>
+                <th>Link</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Data rows will be inserted here by JavaScript -->
+        </tbody>
+    </table>
+
+    <script>
+        const data = []; // Your JSON data will be fetched and assigned here
+
+        function loadData() {
+            fetch('data.json')
+                .then(response => response.json())
+                .then(json => {
+                    data.push(...json);
+                    populateTable();
+                });
+        }
+
+        function populateTable() {
+            const tableBody = document.querySelector('#productTable tbody');
+            tableBody.innerHTML = '';
+
+            data.forEach(item => {
+                const row = document.createElement('tr');
+                row.className = item.status.toLowerCase(); // Assign class based on status
+
+                row.innerHTML = `
+                    <td>${item.status}</td>
+                    <td>${item.productNameDisplayName}</td>
+                    <td>${item.productIdReferenceName}</td>
+                    <td>${item.storeId}</td>
+                    <td>${item.priceUs}</td>
+                    <td>${item.payerPoints}</td>
+                    <td>${item.description || ''}</td>
+                    <td><a href="${item.linkToTheBalance}" target="_blank">View Link</a></td>
+                `;
+
+                tableBody.appendChild(row);
+            });
+        }
+
+        function filterTable() {
+            const searchTerm = document.querySelector('#searchInput').value.toLowerCase();
+            const rows = document.querySelectorAll('#productTable tbody tr');
+
+            rows.forEach(row => {
+                const cells = row.getElementsByTagName('td');
+                let match = false;
+
+                for (let i = 0; i < cells.length; i++) {
+                    if (cells[i].textContent.toLowerCase().includes(searchTerm)) {
+                        match = true;
+                        break;
+                    }
+                }
+
+                row.style.display = match ? '' : 'none';
+            });
+        }
+
+        function searchLink() {
+            const searchTerm = document.querySelector('#searchInput').value.toLowerCase();
+            const row = Array.from(document.querySelectorAll('#productTable tbody tr'))
+                .find(row => row.textContent.toLowerCase().includes(searchTerm));
+
+            if (row) {
+                const link = row.querySelector('a');
+                if (link) {
+                    window.open(link.href, '_blank');
+                }
+            }
+        }
+
+        // Load data when the page is loaded
+        document.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+</html>
